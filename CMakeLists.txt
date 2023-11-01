@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.24)
 
-project(roboflex_dynamixel VERSION 0.1.2 DESCRIPTION "roboflex dynamixel")
+project(roboflex_dynamixel VERSION 0.1.3 DESCRIPTION "roboflex dynamixel")
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
