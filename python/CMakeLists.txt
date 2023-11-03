@@ -1,7 +1,7 @@
 # python/CMakeLists.txt
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.18)
 
-project(roboflex_dynamixel_ext VERSION 0.1.3 DESCRIPTION "roboflex dynamixel python wrapping")
+project(roboflex_dynamixel_ext VERSION 0.1.4 DESCRIPTION "roboflex dynamixel python wrapping")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
