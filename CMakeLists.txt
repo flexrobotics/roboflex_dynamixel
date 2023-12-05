@@ -64,15 +64,6 @@ target_include_directories(roboflex_dynamixel PUBLIC
 target_link_libraries(roboflex_dynamixel PUBLIC 
     roboflex_core 
     dynamixel_sdk
-
-    # # Unfortunately, we need to link against all these libraries
-    # # because they are used by roboflex_core, and cmake doesn't
-    # # seem to be transitivily doing it's thing. Urgh, someone help.
-    # flatbuffers_util 
-    # xtensor 
-    # xsimd 
-    # xtl
-    # Eigen3::Eigen
 )
 
 
