@@ -338,6 +338,21 @@ public:
             return Ptr(k);
         }
 
+    static Ptr CurrentController(
+        const string& device_name,
+        int baud_rate,
+        const vector<DXLId>& dxl_ids) {
+            auto k = new DynamixelGroupController(
+                device_name,
+                baud_rate,
+                dxl_ids,
+                OperatingMode::CurrentControl,
+                {DXLControlTable::PresentCurrent, DXLControlTable::PresentVelocity, DXLControlTable::PresentPosition},
+                {DXLControlTable::GoalCurrent}
+            );
+            return Ptr(k);
+        }
+
     virtual ~DynamixelGroupController();
 
     // User passes a function of this type to 'run_readwrite_loop'.

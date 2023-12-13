@@ -191,6 +191,13 @@ PYBIND11_MODULE(roboflex_dynamixel_ext, m) {
             py::arg("baud_rate"),
             py::arg("dxl_ids"))
 
+        .def_static("CurrentController", 
+            &DynamixelGroupController::CurrentController,
+            "Create a DynamixelGroupController in all current control mode.",
+            py::arg("device_name"),
+            py::arg("baud_rate"),
+            py::arg("dxl_ids"))
+
         .def("get_device_name", &DynamixelGroupController::get_device_name)
         .def("get_baud_rate", &DynamixelGroupController::get_baud_rate)
         .def("get_dynamixel_ids", &DynamixelGroupController::ping)
