@@ -35,7 +35,6 @@ FetchContent_Declare(roboflex_core
 )
 set(BUILD_ROBOFLEX_PYTHON_EXT OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(roboflex_core)
-# find_package(roboflex_core REQUIRED)
 
 
 # -------------------- 
