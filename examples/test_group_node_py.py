@@ -1,6 +1,6 @@
 import math
 import time
-import roboflex.core as rfc
+import roboflex as rfc
 import roboflex.dynamixel as rfd
 
 DynamixelID = 5
@@ -82,7 +82,7 @@ class MyDynamixelRemoteController(rfd.DynamixelRemoteController):
 dynamixel_node = rfd.DynamixelGroupNode(
     controller = rfd.DynamixelGroupController.PositionController(
         device_name='/dev/ttyUSB0',
-        baud_rate=3000000,
+        baud_rate=3_000_000,
         dxl_ids=[DynamixelID],
     ),
 )

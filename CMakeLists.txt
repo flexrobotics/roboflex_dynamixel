@@ -67,6 +67,14 @@ target_link_libraries(roboflex_dynamixel PUBLIC
 
 
 # -------------------- 
+# Examples
+
+# test_group_node_cpp example
+add_executable(test_group_node_cpp examples/test_group_node_cpp.cpp)
+target_link_libraries(test_group_node_cpp PRIVATE roboflex_dynamixel)
+
+
+# -------------------- 
 # install
 
 # If you need to install the dynamixel library

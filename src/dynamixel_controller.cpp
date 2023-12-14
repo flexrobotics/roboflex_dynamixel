@@ -1,3 +1,4 @@
+#include <set>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -100,7 +101,11 @@ DynamixelGroupController::DynamixelGroupController(
         port_handler(dynamixel::PortHandler::getPortHandler(device_name.c_str())),
         packet_handler(dynamixel::PacketHandler::getPacketHandler(2.0)),
         sync_reader(nullptr),
-        sync_writer(nullptr)
+        sync_writer(nullptr),
+        IndirectAddressForReading(168),
+        IndirectDataForReading(208),
+        IndirectAddressForWriting(168 + 14*2),
+        IndirectDataForWriting(208 + 14)
 {
     if (!port_handler->openPort()) {
         throw DynamixelException("DynamixelGroup constructor: invalid device name");
@@ -121,6 +126,33 @@ DynamixelGroupController::DynamixelGroupController(
     const DXLIdsToControlTableEntries& write_control_map):
         DynamixelGroupController(device_name, baud_rate)
 {
+    DXLId first_dxl_id = dxl_ids[0];
+    int model_number = read_directly(first_dxl_id, DXLControlTable::ModelNumber);
+    DynamixelModel model = DynamixelModel{model_number};
+    std::string model_name = ModelNumbersToNames.at(model);
+
+    if (AddressingType1Models.contains(model)) {
+        IndirectAddressForReading = 168;
+        IndirectDataForReading = 208;
+        IndirectAddressForWriting = 168 + 14*2;
+        IndirectDataForWriting = 208 + 14;
+    } else if (AddressingType2Models.contains(model)) {
+        IndirectAddressForReading = 168;
+        IndirectDataForReading = 208;
+        IndirectAddressForWriting = 168 + 10*2;
+        IndirectDataForWriting = 208 + 10;
+    } else if (AddressingType3Models.contains(model)) {
+        IndirectAddressForReading = 168;
+        IndirectDataForReading = 224;
+        IndirectAddressForWriting = 578;
+        IndirectDataForWriting = 634;
+    } else {
+        stringstream es;
+        es << "DynamixelGroupController found unsupported dynamixel model: " << model_number 
+           << " dynamixel id: " << first_dxl_id << " model name: " << model_name;
+        throw DynamixelException(es.str());
+    }
+
     set_operating_modes(dxl_ids, operating_modes);
     set_sync_read(read_control_map);
     set_sync_write(write_control_map);
@@ -288,6 +320,38 @@ void DynamixelGroupController::write_directly(DXLId dxl_id, DXLControlTable cont
     }
 }
 
+int DynamixelGroupController::read_directly(DXLId dxl_id, DXLControlTable control_table_entry, bool disable_torque_) 
+{
+    bool torque_was_enabled = false;
+    if (disable_torque_) {
+        torque_was_enabled = get_torque_enabled(dxl_id);
+        if (!torque_was_enabled) {
+            disable_torque({ dxl_id });
+        }
+    }
+
+    int read_value = 0;
+    int v = to_underlying(control_table_entry);
+    int size = ControlTableEntriesToSizes.find(control_table_entry)->second;
+    switch (size) {
+        case 1:
+            read_value = read_1byte_txrx(dxl_id, v);
+            break;
+        case 2:
+            read_value = read_2byte_txrx(dxl_id, v);
+            break;
+        case 4:
+            read_value = read_4byte_txrx(dxl_id, v);
+            break;
+    }
+
+    if (disable_torque_ && torque_was_enabled) {
+        enable_torque({ dxl_id });
+    }
+
+    return read_value;
+}
+
 void DynamixelGroupController::set_operating_mode(DXLId dxl_id, OperatingMode operating_mode) {
     bool torque_enabled = get_torque_enabled(dxl_id);
     if (torque_enabled) {
@@ -422,6 +486,7 @@ DynamixelGroupState DynamixelGroupController::read()
     // Perform the actual read
     double t0 = core::get_current_time();
     int result = sync_reader->txRxPacket();
+
     double t1 = core::get_current_time();
 
     if (result != COMM_SUCCESS) {

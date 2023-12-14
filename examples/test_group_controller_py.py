@@ -1,6 +1,6 @@
 import math
 import time
-import roboflex.core as src
+import roboflex as src
 import roboflex.dynamixel as srd
 
 DynamixelID = 5
@@ -34,7 +34,7 @@ class MyDynamixelRobot:
         # CONSTRUCTOR 3: position control only, with default control table entries
         self.dynamixel = srd.DynamixelGroupController.PositionController(
             device_name='/dev/ttyUSB0',
-            baud_rate=3000000,
+            baud_rate=3_000_000,
             dxl_ids=[DynamixelID],
         )
         print("READ SETTINGS: ", self.dynamixel.read_control_map)

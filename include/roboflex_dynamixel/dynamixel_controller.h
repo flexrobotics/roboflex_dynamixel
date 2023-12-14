@@ -1,6 +1,7 @@
 #ifndef ROBOFLEX_DYNAMIXEL_CONTROLLER__H
 #define ROBOFLEX_DYNAMIXEL_CONTROLLER__H
 
+#include <set>
 #include <functional>
 #include <memory>
 #include "dynamixel_sdk/dynamixel_sdk.h"
@@ -38,6 +39,10 @@ enum class OperatingMode: int {
 };
 
 enum class DXLControlTable: int {
+    ModelNumber         = 0,
+    ModelInformation    = 2,
+    FirmwareVersion     = 6,
+    BaudRate            = 8,
     OperatingMode       = 11,
     TemperatureLimit    = 31,
     MaxVoltage          = 32,
@@ -77,8 +82,163 @@ enum class DXLControlTable: int {
     PresentTemperature  = 146,
 };
 
+enum class DynamixelModel: int {
+
+    // XW
+    XW540_T140      = 1180,
+    XW540_T260      = 1170,
+    XW430_T200      = 1280,
+    XW430_T333      = 1270,
+
+    // XD
+    XD540_T270      = 1101,
+    XD540_T150      = 1111,
+    XD430_T350      = 1001,
+    XD430_T210      = 0,    // NOT DOCUMENTED
+
+    // XH
+    XH540_W150      = 1110,
+    XH540_W270      = 1100,
+    XH540_V150      = 1150,
+    XH540_V270      = 1140,
+    XH430_W210      = 1010,
+    XH430_W350      = 1000,
+    XH430_V210      = 1050,
+    XH430_V350      = 1040,
+
+    // XM
+    XM540_W150      = 1130,
+    XM540_W270      = 1120,
+    XM430_W210      = 1030,
+    XM430_W350      = 1020,
+
+    // XC
+    XC430_W250_2    = 1160, // NOT SUPPORTED YET
+    XC430_W150      = 1070,
+    XC430_W240      = 1080,
+    //XC430_T150BB  = 1070, // DIFFERENT ONLY IN BALL BEARINGS; OTHERWISE INDISTINGUISHABLE
+    //XC430_T240BB  = 1080,	
+    XC330_T288      = 1220,
+    XC330_T181      = 1210,
+    XC330_M288      = 1240,
+    XC330_M181      = 1230,
+
+    // XL
+    XL430_W250_2    = 1090, // NOT SUPPORTED YET
+    XL430_W250      = 1060,
+    XL330_M288      = 1200,
+    XL330_M077      = 1190,
+    XL320           =  350, // NOT SUPPORTED YET
+
+    // PH
+    PH54_200_S500_R = 2020, // NOT SUPPORTED YET
+    PH54_100_S500_R = 2010, // NOT SUPPORTED YET
+    PH42_020_S300_R = 2000, // NOT SUPPORTED YET
+
+    // PM
+    PM54_060_S250_R = 2120, // NOT SUPPORTED YET
+    PM54_040_S250_R = 2110, // NOT SUPPORTED YET
+    PM42_010_S260_R = 2100, // NOT SUPPORTED YET
+};
+
+// IndirectAddressForReading    = 168;
+// IndirectDataForReading       = 224;
+// IndirectAddressForWriting    = 168 + 14*2;
+// IndirectDataForWriting       = 224 + 14;
+const std::set<DynamixelModel> AddressingType1Models{
+    DynamixelModel::XL430_W250,
+};
+
+// IndirectAddressForReading    = 168;
+// IndirectDataForReading       = 208;
+// IndirectAddressForWriting    = 168 + 10*2;
+// IndirectDataForWriting       = 208 + 10;
+const std::set<DynamixelModel> AddressingType2Models{
+    DynamixelModel::XC330_T288,
+    DynamixelModel::XC330_T181,
+    DynamixelModel::XC330_M288,
+    DynamixelModel::XC330_M181,
+    DynamixelModel::XL330_M288,
+    DynamixelModel::XL330_M077,
+};
+
+// IndirectAddressForReading    = 168;
+// IndirectDataForReading       = 224;
+// IndirectAddressForWriting    = 578;
+// IndirectDataForWriting       = 634;
+const std::set<DynamixelModel> AddressingType3Models{
+    DynamixelModel::XW540_T140,
+    DynamixelModel::XW540_T260,
+    DynamixelModel::XW430_T200,
+    DynamixelModel::XW430_T333,
+    DynamixelModel::XD540_T270,
+    DynamixelModel::XD540_T150,
+    DynamixelModel::XD430_T350,
+    DynamixelModel::XD430_T210,
+    DynamixelModel::XH540_W150,
+    DynamixelModel::XH540_W270,
+    DynamixelModel::XH540_V150,
+    DynamixelModel::XH540_V270,
+    DynamixelModel::XH430_W210,
+    DynamixelModel::XH430_W350,
+    DynamixelModel::XH430_V210,
+    DynamixelModel::XH430_V350,
+    DynamixelModel::XM540_W150,
+    DynamixelModel::XM540_W270,
+    DynamixelModel::XM430_W210,
+    DynamixelModel::XM430_W350,
+    DynamixelModel::XC430_W150,
+    DynamixelModel::XC430_W240,
+};
+
+typedef map<DynamixelModel, string> DynamixelModelNumberToModelNameMap;
+const DynamixelModelNumberToModelNameMap ModelNumbersToNames = {
+    { DynamixelModel::XW540_T140        , "XW540-T140" },
+    { DynamixelModel::XW540_T260        , "XW540-T260" },
+    { DynamixelModel::XW430_T200        , "XW430-T200" },
+    { DynamixelModel::XW430_T333        , "XW430-T333" },
+    { DynamixelModel::XD540_T270        , "XD540-T270" },
+    { DynamixelModel::XD540_T150        , "XD540-T150" },
+    { DynamixelModel::XD430_T350        , "XD430-T350" },
+    { DynamixelModel::XD430_T210        , "XD430-T210" },
+    { DynamixelModel::XH540_W150        , "XH540-W150" },
+    { DynamixelModel::XH540_W270        , "XH540-W270" },
+    { DynamixelModel::XH540_V150        , "XH540-V150" },
+    { DynamixelModel::XH540_V270        , "XH540-V270" },
+    { DynamixelModel::XH430_W210        , "XH430-W210" },
+    { DynamixelModel::XH430_W350        , "XH430-W350" },
+    { DynamixelModel::XH430_V210        , "XH430-V210" },
+    { DynamixelModel::XH430_V350        , "XH430-V350" },
+    { DynamixelModel::XM540_W150        , "XM540-W150" },
+    { DynamixelModel::XM540_W270        , "XM540-W270" },
+    { DynamixelModel::XM430_W210        , "XM430-W210" },
+    { DynamixelModel::XM430_W350        , "XM430-W350" },
+    { DynamixelModel::XC430_W250_2      , "2XC430-W250" },
+    { DynamixelModel::XC430_W150        , "XC430-W150" },
+    { DynamixelModel::XC430_W240        , "XC430-W240" },
+    { DynamixelModel::XC330_T288        , "XC330-T288" },
+    { DynamixelModel::XC330_T181        , "XC330-T181" },
+    { DynamixelModel::XC330_M288        , "XC330-M288" },
+    { DynamixelModel::XC330_M181        , "XC330-M181" },
+    { DynamixelModel::XL430_W250_2      , "2XL430-W250" },
+    { DynamixelModel::XL430_W250        , "XL430-W250" }, 
+    { DynamixelModel::XL330_M288        , "XL330-M288" },
+    { DynamixelModel::XL330_M077        , "XL330-M077" },
+    { DynamixelModel::XL320             , "XL320" },
+    { DynamixelModel::PH54_200_S500_R   , "PH54-200-S500-R" },
+    { DynamixelModel::PH54_100_S500_R   , "PH54-100-S500-R" },
+    { DynamixelModel::PH42_020_S300_R   , "PH42-020-S300-R" },
+    { DynamixelModel::PM54_060_S250_R   , "PM54-060-S250-R" },
+    { DynamixelModel::PM54_040_S250_R   , "PM54-040-S250-R" },
+    { DynamixelModel::PM42_010_S260_R   , "PM42-010-S260-R" },
+};
+
 typedef map<DXLControlTable, int> ControlTableSizeMap;
 const ControlTableSizeMap ControlTableEntriesToSizes = {
+    { DXLControlTable::ModelNumber         , 2 },
+    { DXLControlTable::ModelInformation    , 4 },
+    { DXLControlTable::FirmwareVersion     , 1 },
+    { DXLControlTable::BaudRate            , 1 },
     { DXLControlTable::TemperatureLimit    , 1 },
     { DXLControlTable::MaxVoltage          , 2 },
     { DXLControlTable::MinVoltage          , 2 },
@@ -119,6 +279,10 @@ const ControlTableSizeMap ControlTableEntriesToSizes = {
 
 typedef map<DXLControlTable, string> ControlTableNameMap;
 const ControlTableNameMap ControlTableEntriesToNames = {
+    { DXLControlTable::ModelNumber         , "ModelNumber" },
+    { DXLControlTable::ModelInformation    , "ModelInformation" },
+    { DXLControlTable::FirmwareVersion     , "FirmwareVersion" },
+    { DXLControlTable::BaudRate            , "BaudRate" },
     { DXLControlTable::TemperatureLimit    , "TemperatureLimit" },
     { DXLControlTable::MaxVoltage          , "MaxVoltage" },
     { DXLControlTable::MinVoltage          , "MinVoltage" },
@@ -157,11 +321,17 @@ const ControlTableNameMap ControlTableEntriesToNames = {
     { DXLControlTable::PresentTemperature  , "PresentTemperature" }
 };
 
-const int IndirectAddressForReading = 168;
-const int IndirectDataForReading = 224;
+// const int IndirectAddressForReading = 168;
+// const int IndirectDataForReading = 224;
 
-const int IndirectAddressForWriting = 578;
-const int IndirectDataForWriting = 634;
+// const int IndirectAddressForWriting = 578;
+// const int IndirectDataForWriting = 634;
+
+// const int IndirectAddressForReading = 168;
+// const int IndirectDataForReading = 208;
+
+// const int IndirectAddressForWriting = 168 + 28;
+// const int IndirectDataForWriting = 208 + 14;
 
 /**
  * Each dynamixel motor in the group has an id.
@@ -402,6 +572,7 @@ public:
 
     // For direct-low level synchronous write operation, if you really want to.
     void write_directly(DXLId dxl_id, DXLControlTable control_table_entry, int value, bool disable_torque_=true);
+    int read_directly(DXLId dxl_id, DXLControlTable control_table_entry, bool disable_torque_=true);
 
     const string & get_device_name() const { return device_name; }
     int get_baud_rate() const { return baud_rate; }
@@ -427,6 +598,11 @@ protected:
 
     string device_name;
     int baud_rate;
+
+    int IndirectAddressForReading;
+    int IndirectDataForReading;
+    int IndirectAddressForWriting;
+    int IndirectDataForWriting;
 
     dynamixel::PortHandler* port_handler;
     dynamixel::PacketHandler* packet_handler;
