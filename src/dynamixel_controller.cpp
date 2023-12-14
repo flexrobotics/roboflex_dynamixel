@@ -126,6 +126,8 @@ DynamixelGroupController::DynamixelGroupController(
     const DXLIdsToControlTableEntries& write_control_map):
         DynamixelGroupController(device_name, baud_rate)
 {
+    disable_torque(dxl_ids);
+
     DXLId first_dxl_id = dxl_ids[0];
     int model_number = read_directly(first_dxl_id, DXLControlTable::ModelNumber);
     DynamixelModel model = DynamixelModel{model_number};

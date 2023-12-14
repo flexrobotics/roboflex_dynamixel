@@ -321,18 +321,6 @@ const ControlTableNameMap ControlTableEntriesToNames = {
     { DXLControlTable::PresentTemperature  , "PresentTemperature" }
 };
 
-// const int IndirectAddressForReading = 168;
-// const int IndirectDataForReading = 224;
-
-// const int IndirectAddressForWriting = 578;
-// const int IndirectDataForWriting = 634;
-
-// const int IndirectAddressForReading = 168;
-// const int IndirectDataForReading = 208;
-
-// const int IndirectAddressForWriting = 168 + 28;
-// const int IndirectDataForWriting = 208 + 14;
-
 /**
  * Each dynamixel motor in the group has an id.
  */
