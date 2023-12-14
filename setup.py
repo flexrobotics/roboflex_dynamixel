@@ -50,7 +50,7 @@ long_description = (Path(__file__).parent / "README.md").read_text()
 
 setup(
     name='roboflex.dynamixel',
-    version='0.1.7',
+    version='0.1.8',
     description='Roboflex Dynamixel Library',
     author='Colin Prepscius',
     author_email='colinprepscius@gmail.com',

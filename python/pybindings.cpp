@@ -217,6 +217,8 @@ PYBIND11_MODULE(roboflex_dynamixel_ext, m) {
         .def_property_readonly("write_control_map", &DynamixelGroupController::get_write_control_map)
         .def("read", &DynamixelGroupController::read)
         .def("write", &DynamixelGroupController::write)
+        .def("read_directly", &DynamixelGroupController::read_directly)
+        .def("write_directly", &DynamixelGroupController::write_directly)
         .def("reboot", &DynamixelGroupController::reboot)
         .def("ping", &DynamixelGroupController::ping)
         .def("run_readwrite_loop", [](

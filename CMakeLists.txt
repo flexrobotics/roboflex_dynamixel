@@ -14,11 +14,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 include(FetchContent)
 
 # Fetch and make dynamixel available
-FetchContent_Declare(
-  dynamixel_sdk
-  GIT_REPOSITORY https://github.com/ROBOTIS-GIT/DynamixelSDK.git
-  GIT_TAG        3.7.51
-  SOURCE_DIR     "${CMAKE_BINARY_DIR}/_deps/dynamixel_sdk"
+FetchContent_Declare(dynamixel_sdk
+    # for some reason, we sometimes have a problem on arm
+    #GIT_REPOSITORY https://github.com/ROBOTIS-GIT/DynamixelSDK.git
+    #GIT_TAG        3.7.51
+    URL         https://github.com/ROBOTIS-GIT/DynamixelSDK/archive/refs/tags/3.7.51.tar.gz
+    SOURCE_DIR  "${CMAKE_BINARY_DIR}/_deps/dynamixel_sdk"
 )
 FetchContent_GetProperties(dynamixel_sdk)
 if(NOT dynamixel_sdk_POPULATED)
