@@ -6,6 +6,22 @@
 #include <memory>
 #include "dynamixel_sdk/dynamixel_sdk.h"
 
+/**
+ * Support for the DynamixelGroupController class.
+ * 
+ * This class can control a set of dynamixel motors
+ * wired together in a chain. 
+ * 
+ * It provides a low-level 'run_readwrite_loop' function that 
+ * will read from motors and write to them in a synchronous loop,
+ * calling a user-supplied ReadWriteLoopFunction at each pass
+ * to get new data to write.
+ * 
+ * This function can be used by the user to implement 
+ * higher-level controllers.
+ */
+
+
 using std::string, std::vector, std::map;
 
 
@@ -328,13 +344,15 @@ typedef int DXLId;
 
 /**
  * We sometimes set and update lists of control table entries
- * for each dynamixel in the group. Each can be configured individually.
+ * for each dynamixel in the group. Each dynamixel can be 
+ * configured individually. This is a map from dynamixel id
+ * to values that will be read or written.
  * 
  * Here is an example:
  * 
  * {
- *  "5": [128, 132],    // PresentVelocity, PresentPosition
- *  "6": [128, 132],
+ *   5: [128, 132],    // PresentVelocity, PresentPosition
+ *   6: [128, 132],
  * }
  */
 typedef map<DXLId, vector<DXLControlTable>> DXLIdsToControlTableEntries;
@@ -342,12 +360,13 @@ typedef map<DXLId, vector<DXLControlTable>> DXLIdsToControlTableEntries;
 /**
  * A dynamixel motor in the group is configured to
  * read and write values for a subset of the control table. 
+ * When we read we get an instance of this for each dynamixel.
  * 
  * Here is an example:
  * 
  *  {
- *     "128": 3305,     // PresentVelocity
- *     "132": 2048,     // PresentPosition
+ *     128: 3305,     // PresentVelocity
+ *     132: 2048,     // PresentPosition
  *  },
  */
 typedef map<DXLControlTable, int> DeviceValues;
@@ -369,6 +388,9 @@ typedef map<DXLControlTable, int> DeviceValues;
  */
 typedef map<DXLId, DeviceValues> DXLIdsToValues;
 
+/**
+ * Human-readable stream operator.
+ */
 inline std::ostream& operator << (std::ostream& os, const DXLIdsToValues& values)
 {
     os << "{";
@@ -406,7 +428,6 @@ struct DynamixelGroupState {
     string to_string() const;
 };
 
-
 /**
  * A command should be populated by the user with 
  * values to write for each control table entry,
@@ -434,12 +455,29 @@ struct DynamixelGroupCommand {
 
 
 /**
+ * Prolifically thrown by all functions in this library.
+ * Really indicates a configuration error or hardware - 
+ * you can't make contact with the motors, you've tried
+ * to read something you didn't configure for, etc.
+ */
+struct DynamixelException: public std::exception {
+    string reason;
+    DynamixelException(const string & reason): std::exception(), reason(reason) {}
+    const char* what() const noexcept { return reason.c_str(); }
+};
+
+
+/**
  * A DynamixelGroupController is an abstraction over a
  * group of dynamixel motors chained together. It provides
  * a low-level but convenient interface to run a synchronous
  * read-write loop to read from the device, update whatever
  * state, compute a resulting command, and then write that command
- * to the device.
+ * to the device. It does this via a passed-in instance of
+ * ReadWriteLoopFunction, which is called at each iteration
+ * of the read-write loop. Thus, 'run_readwrite_loop' will
+ * occupy the calling thread until the given function returns
+ * false.
  */
 class DynamixelGroupController {
 public:
@@ -466,6 +504,10 @@ public:
         const vector<DXLControlTable>& read_control_list,
         const vector<DXLControlTable>& write_control_list);
 
+    /**
+     * Convenience constructor for Position control mode
+     * (reads PresentPosition, writes GoalPosition). 
+     */
     static Ptr PositionController(
         const string& device_name,
         int baud_rate,
@@ -481,6 +523,11 @@ public:
             return Ptr(k);
         }
 
+    /**
+     * Convenience constructor for Velocity control mode
+     * (reads PresentVelocity, PresentPosition, 
+     *  writes GoalVelocity). 
+     */
     static Ptr VelocityController(
         const string& device_name,
         int baud_rate,
@@ -496,6 +543,11 @@ public:
             return Ptr(k);
         }
 
+    /**
+     * Convenience constructor for Current control mode
+     * (reads PresentCurrent, PresentVelocity, PresentPosition, 
+     *  writes GoalCurrent). 
+     */
     static Ptr CurrentController(
         const string& device_name,
         int baud_rate,
@@ -600,13 +652,6 @@ protected:
 
     DXLIdsToControlTableEntries sync_read_settings;
     DXLIdsToControlTableEntries sync_write_settings;
-};
-
-
-struct DynamixelException: public std::exception {
-    string reason;
-    DynamixelException(const string & reason): std::exception(), reason(reason) {}
-    const char* what() const noexcept { return reason.c_str(); }
 };
 
 

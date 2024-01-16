@@ -1,6 +1,6 @@
 # roboflex.dynamixel
 
-Support for Robotis' Dynamixel motor product line. Some of it anyway (tested on XH430-V350-R, XH430-W350, XM540-W270, others may work as well).
+Support for Robotis' Dynamixel motor product line. Some of it anyway (tested on XH430-V350-R, XH430-W350, XM540-W270, XL-330-M288-T, others may work as well).
 
 We provide two layers to controlling dynamixel motors:
 
