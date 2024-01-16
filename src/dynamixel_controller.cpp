@@ -618,7 +618,7 @@ void DynamixelGroupController::run_readwrite_loop(ReadWriteLoopFunction f)
     while (should_continue) {
         auto state = this->read();
         should_continue = f(state, command);
-        if (should_continue &&  command.should_write) {
+        if (should_continue && command.should_write) {
             write(command);
         }
     }
