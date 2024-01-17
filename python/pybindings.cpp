@@ -235,7 +235,8 @@ PYBIND11_MODULE(roboflex_dynamixel_ext, m) {
             };
             d.run_readwrite_loop(rwf_local);
         },
-            py::arg("rwf"))
+            py::arg("rwf"),
+            py::call_guard<py::gil_scoped_release>())
         .def("freeze", &DynamixelGroupController::freeze)
      ;
 
