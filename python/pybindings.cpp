@@ -229,6 +229,7 @@ PYBIND11_MODULE(roboflex_dynamixel_ext, m) {
                 const DynamixelGroupState& state,
                 DynamixelGroupCommand& command)
             {
+                py::gil_scoped_acquire gil_acquire;
                 auto resultobj = rwf(state, &command);
                 bool retval = resultobj.cast<bool>();
                 return retval;
