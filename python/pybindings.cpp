@@ -18,6 +18,16 @@ using namespace roboflex::core;
 using namespace roboflex::dynamixelgroup;
 using namespace roboflex::dynamixelnodes;
 
+template <class DynamixelGroupControllerNodeBase = DynamixelGroupControllerNode> 
+class PyDynamixelGroupControllerNode: public PyNode<DynamixelGroupControllerNodeBase> {
+public:
+    using PyNode<DynamixelGroupControllerNodeBase>::PyNode;
+
+    DXLIdsToValues readwrite_loop_function(const DynamixelGroupState& state, const core::MessagePtr last_msg) override {
+        PYBIND11_OVERRIDE_PURE(DXLIdsToValues, DynamixelGroupControllerNodeBase, readwrite_loop_function, state, last_msg);
+    }
+};
+
 template <class DynamixelRemoteControllerBase = DynamixelRemoteController> 
 class PyDynamixelRemoteController: public PyNode<DynamixelRemoteControllerBase> {
 public:
@@ -240,6 +250,14 @@ PYBIND11_MODULE(roboflex_dynamixel_ext, m) {
             py::call_guard<py::gil_scoped_release>())
         .def("freeze", &DynamixelGroupController::freeze)
      ;
+
+    py::class_<DynamixelGroupControllerNode, core::RunnableNode, PyDynamixelGroupControllerNode<>, std::shared_ptr<DynamixelGroupControllerNode>>(m, "DynamixelGroupControllerNode")
+        .def(py::init<std::shared_ptr<DynamixelGroupController>, const std::string&>(),
+            "Create a DynamixelGroupControllerNode.",
+            py::arg("controller"),
+            py::arg("name") = "DynamixelGroupControllerNode")
+        .def_readonly("controller", &DynamixelGroupControllerNode::controller)
+    ;
 
     py::class_<DynamixelGroupNode, core::RunnableNode, std::shared_ptr<DynamixelGroupNode>>(m, "DynamixelGroupNode")
         .def(py::init<std::shared_ptr<DynamixelGroupController>, const std::string&>(),

@@ -74,7 +74,54 @@ protected:
 };
 
 
+/**
+ * Combines the above two into a single message. Useful for broadcasting
+ * 'what happened' in a DynamixelGroupController loop method. 
+ */
+class DynamixelCommandStateMessage: public core::Message {
+public:
+    inline static const char MessageName[] = "DynamixelCommandStateMessage";
+    DynamixelCommandStateMessage(core::Message& other): core::Message(other) {}
+    DynamixelCommandStateMessage(const DynamixelGroupState& state, const DynamixelGroupCommand& command);
+    DynamixelGroupState get_state() const;
+    DynamixelGroupCommand get_command() const;
+    void print_on(ostream& os) const override;
+protected:
+    mutable DynamixelGroupState _state;
+    mutable bool _state_initialized = false;
+    mutable DynamixelGroupCommand _command;
+    mutable bool _command_initialized = false;
+};
+
+
 // --- Nodes ---
+
+class DynamixelGroupControllerNode: public core::RunnableNode {
+public:
+    DynamixelGroupControllerNode(
+        DynamixelGroupController::Ptr controller,
+        const string& name = "DynamixelGroupController"):
+            core::RunnableNode(name),
+            controller(controller) {}
+
+    DynamixelGroupController::Ptr controller;
+
+    void receive(core::MessagePtr m) override;
+
+protected:
+
+    virtual DXLIdsToValues readwrite_loop_function(
+        const DynamixelGroupState& state,
+        const core::MessagePtr last_msg) = 0;
+
+    void child_thread_fn() override;
+
+    // This isn't supported until gcc 12.1...
+    //atomic<core::MessagePtr> last_message;
+
+    std::recursive_mutex last_message_mutex;
+    core::MessagePtr last_message = nullptr;  
+};
 
 /**
  * A RunnableNode subclass that controls a DynamixelGroupController.
