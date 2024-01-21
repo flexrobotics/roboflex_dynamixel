@@ -64,25 +64,25 @@ The first of these is DynamixelGroupControllerNode. This Node sub-class adapts t
 
 Encapsulates the a state and command of the dynamixel group. Used to communicate the last-known state of the motors, and last-known command sent to the motors. Serializes this schema to flexbuffers:
 
-{
-    ...
-    "state": {                  # the present state of the group of motors:
-        5: {                    # motor with id 5
-            128: 2,             # has present velocity = 2
-            132: 204,           # has present position = 204
-        },
-        6: {                    # motor with id 6, etc.
-            128: 12,
-            132: 301,
+    {
+        ...
+        "state": {                  # the present state of the group of motors:
+            5: {                    # motor with id 5
+                128: 2,             # has present velocity = 2
+                132: 204,           # has present position = 204
+            },
+            6: {                    # motor with id 6, etc.
+                128: 12,
+                132: 301,
+            }
         }
+        "command": {                # the last-known command you sent
+            5: {104: 4},            # motor with id 5 should get goal velocity = 4
+            6: {104: 5}             # motor with id 6 should get goal velocity = 5
+        }
+        "t0": 170002032.2122312,    # time just before communication with motor
+        "t1": 170002032.2283432,    # time just after communication with motor
     }
-    "command": {                # the last-known command you sent
-        5: {104: 4},            # motor with id 5 should get goal velocity = 4
-        6: {104: 5}             # motor with id 6 should get goal velocity = 5
-    }
-    "t0": 170002032.2122312,    # time just before communication with motor
-    "t1": 170002032.2283432,    # time just after communication with motor
-}
 
 
 ## For more 'distributed' operation:
