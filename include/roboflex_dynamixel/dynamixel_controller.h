@@ -40,9 +40,9 @@ T vector_sum(const vector<T> &v) {
 namespace roboflex {
 namespace dynamixelgroup {
 
-// These are operating modes andcontrol table values for the X-series
+// These are operating modes and control table values for the X-series
 // Dynamixel: specifically the XH430-V350-R model
-// Also confirmed to work with XH430-W350 and XM540-W270
+// Also confirmed to work with XH430-W350 and XM540-W270, and XL330-M288-T
 // http://emanual.robotis.com/docs/en/dxl/x/xh430-v350/#control-table-of-eeprom-area
 
 enum class OperatingMode: int {
