@@ -492,7 +492,7 @@ DynamixelGroupState DynamixelGroupController::read()
     double t1 = core::get_current_time();
 
     if (result != COMM_SUCCESS) {
-        throw DynamixelException("DynamixelGroupController::process_thread_fn sync read failed!");
+        throw DynamixelException("DynamixelGroupController::process_thread_fn sync read failed! result=" + std::to_string(result) + " " + packet_handler->getTxRxResult(result));
     }
 
     DynamixelGroupState read_state {{}, {t0, t1}};
