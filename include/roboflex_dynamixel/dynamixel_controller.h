@@ -376,13 +376,13 @@ typedef map<DXLControlTable, int> DeviceValues;
  * 
  * Here is an example:
  * {
- *   "5": {
- *     "128": 3305,     // PresentVelocity
- *     "132": 2048,     // PresentPosition
+ *   5: {
+ *     128: 3305,     // PresentVelocity
+ *     132: 2048,     // PresentPosition
  *   },
- *   "6": {
- *     "128": 1053,
- *     "132": 2056,
+ *   6: {
+ *     128: 1053,
+ *     132: 2056,
  *   }
  * }
  */

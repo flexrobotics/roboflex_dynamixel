@@ -102,6 +102,21 @@ PYBIND11_MODULE(roboflex_dynamixel_ext, m) {
         .def("__repr__", &DynamixelGroupCommandMessage::to_string)
     ;
 
+    py::class_<DynamixelStateCommandMessage, core::Message, std::shared_ptr<DynamixelStateCommandMessage>>(m, "DynamixelStateCommandMessage")
+        .def(py::init<const DynamixelGroupState&, const DynamixelGroupCommand&>(),
+            "Create a DynamixelStateCommandMessage.",
+            py::arg("state"),
+            py::arg("command"))
+        .def(py::init([](const std::shared_ptr<core::Message> o) {
+            return std::make_shared<DynamixelStateCommandMessage>(*o); }),
+            "Construct a DynamixelStateCommandMessage from a core message",
+            py::arg("other"))
+        .def_property_readonly_static("MessageName", [](py::object) { return DynamixelStateCommandMessage::MessageName; })
+        .def_property_readonly("state", &DynamixelStateCommandMessage::get_state)
+        .def_property_readonly("command", &DynamixelStateCommandMessage::get_command)
+        .def("__repr__", &DynamixelStateCommandMessage::to_string)
+    ;
+
     py::enum_<OperatingMode>(m, "OperatingMode")
         .value("CurrentControl"             , OperatingMode::CurrentControl)
         .value("VelocityControl"            , OperatingMode::VelocityControl)

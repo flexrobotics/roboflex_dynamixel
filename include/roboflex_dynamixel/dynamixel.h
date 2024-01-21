@@ -78,11 +78,11 @@ protected:
  * Combines the above two into a single message. Useful for broadcasting
  * 'what happened' in a DynamixelGroupController loop method. 
  */
-class DynamixelCommandStateMessage: public core::Message {
+class DynamixelStateCommandMessage: public core::Message {
 public:
-    inline static const char MessageName[] = "DynamixelCommandStateMessage";
-    DynamixelCommandStateMessage(core::Message& other): core::Message(other) {}
-    DynamixelCommandStateMessage(const DynamixelGroupState& state, const DynamixelGroupCommand& command);
+    inline static const char MessageName[] = "DynamixelStateCommandMessage";
+    DynamixelStateCommandMessage(core::Message& other): core::Message(other) {}
+    DynamixelStateCommandMessage(const DynamixelGroupState& state, const DynamixelGroupCommand& command);
     DynamixelGroupState get_state() const;
     DynamixelGroupCommand get_command() const;
     void print_on(ostream& os) const override;
@@ -96,6 +96,10 @@ protected:
 
 // --- Nodes ---
 
+/**
+ * A RunnableNode subclass that controls a DynamixelGroupController.
+ *  
+ */
 class DynamixelGroupControllerNode: public core::RunnableNode {
 public:
     DynamixelGroupControllerNode(

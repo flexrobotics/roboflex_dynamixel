@@ -163,9 +163,9 @@ void DynamixelGroupCommandMessage::print_on(std::ostream& os) const
 }
 
 
-// --- DynamixelCommandStateMessage ---
+// --- DynamixelStateCommandMessage ---
 
-DynamixelCommandStateMessage::DynamixelCommandStateMessage(
+DynamixelStateCommandMessage::DynamixelStateCommandMessage(
     const DynamixelGroupState& state, 
     const DynamixelGroupCommand& command):
         core::Message(ModuleName, MessageName)
@@ -180,7 +180,7 @@ DynamixelCommandStateMessage::DynamixelCommandStateMessage(
     _command = get_command();
 }
 
-DynamixelGroupState DynamixelCommandStateMessage::get_state() const
+DynamixelGroupState DynamixelStateCommandMessage::get_state() const
 {
     if (!_state_initialized) {
         _state = read_state(root_map());
@@ -189,7 +189,7 @@ DynamixelGroupState DynamixelCommandStateMessage::get_state() const
     return _state;
 }
 
-DynamixelGroupCommand DynamixelCommandStateMessage::get_command() const
+DynamixelGroupCommand DynamixelStateCommandMessage::get_command() const
 {
     if (!_command_initialized) {
         _command = read_command(root_val("command"));
@@ -198,11 +198,11 @@ DynamixelGroupCommand DynamixelCommandStateMessage::get_command() const
     return _command;
 }
 
-void DynamixelCommandStateMessage::print_on(std::ostream& os) const
+void DynamixelStateCommandMessage::print_on(std::ostream& os) const
 {
     DynamixelGroupState state = this->get_state();
     DynamixelGroupCommand command = this->get_command();
-    os << "<DynamixelCommandStateMessage state:";
+    os << "<DynamixelStateCommandMessage state:";
     state.print_on(os);
     os << " command:";
     command.print_on(os);
@@ -229,7 +229,7 @@ void DynamixelGroupControllerNode::child_thread_fn()
         if (should_continue) {
             const std::lock_guard<std::recursive_mutex> lock(last_message_mutex);
             command.values = this->readwrite_loop_function(state, last_message);
-            this->signal(std::make_shared<DynamixelCommandStateMessage>(state, command));
+            this->signal(std::make_shared<DynamixelStateCommandMessage>(state, command));
         }
 
         return should_continue;
