@@ -112,8 +112,10 @@ DynamixelGroupController::DynamixelGroupController(
     }
 
     if (!port_handler->setBaudRate(baud_rate)) {
-        port_handler->closePort();
-        throw DynamixelException("DynamixelGroup constructor: unable to set baud rate");
+        #if !defined(__APPLE__)
+            port_handler->closePort();
+            throw DynamixelException("DynamixelGroup constructor: unable to set baud rate");
+        #endif
     }
 }
 
