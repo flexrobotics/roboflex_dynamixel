@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
@@ -250,19 +251,21 @@ PYBIND11_MODULE(roboflex_dynamixel_ext, m) {
             DynamixelGroupController &d,
             pybind11::function rwf
         ) {
-            auto rwf_local = [&rwf](
+            auto rwf_ptr = std::make_shared<py::function>(std::move(rwf));
+            auto rwf_local = [rwf_ptr](
                 const DynamixelGroupState& state,
                 DynamixelGroupCommand& command)
             {
                 py::gil_scoped_acquire gil_acquire;
-                auto resultobj = rwf(state, &command);
-                bool retval = resultobj.cast<bool>();
-                return retval;
+                py::object resultobj = (*rwf_ptr)(state, &command);
+                return resultobj.cast<bool>();
             };
-            d.run_readwrite_loop(rwf_local);
+            {
+                py::gil_scoped_release release;
+                d.run_readwrite_loop(rwf_local);
+            }
         },
-            py::arg("rwf"),
-            py::call_guard<py::gil_scoped_release>())
+            py::arg("rwf"))
         .def("freeze", &DynamixelGroupController::freeze)
      ;
 
