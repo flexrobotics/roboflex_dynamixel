@@ -504,8 +504,7 @@ public:
 
     DynamixelGroupController(
         const string& device_name,
-        int baud_rate,
-        int loop_sleep_ms = 2);
+        int baud_rate);
 
     DynamixelGroupController(
         const string& device_name,
@@ -599,7 +598,8 @@ public:
     void run_readwrite_loop(ReadWriteLoopFunction f);
     void set_loop_sleep_ms(int ms);
     int get_loop_sleep_ms() const { return loop_sleep_ms; }
-
+    void set_servo_processing_margin_ms(double ms);
+    double get_servo_processing_margin_ms() const { return servo_processing_margin_ms; }
 
     // Enable and disable torque. Must be done bracketing changes
     // to operating modes.
@@ -664,7 +664,11 @@ protected:
     int IndirectDataForReading;
     int IndirectAddressForWriting;
     int IndirectDataForWriting;
-    int loop_sleep_ms = 2;
+    int loop_sleep_ms = 0;
+    bool loop_sleep_override = false;
+    double servo_processing_margin_ms = 1.5;
+    int total_sync_read_bytes = 0;
+    int total_sync_write_bytes = 0;
 
     dynamixel::PortHandler* port_handler;
     dynamixel::PacketHandler* packet_handler;
@@ -674,6 +678,9 @@ protected:
 
     DXLIdsToControlTableEntries sync_read_settings;
     DXLIdsToControlTableEntries sync_write_settings;
+
+    int compute_total_data_bytes(const DXLIdsToControlTableEntries& map) const;
+    void recompute_loop_sleep();
 };
 
 

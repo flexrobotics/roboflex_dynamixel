@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <numeric>
 #include <type_traits>
+#include <cmath>
 #include "roboflex_dynamixel/dynamixel_controller.h"
 #include "roboflex_core/util/utils.h"
 
@@ -95,8 +96,7 @@ string DynamixelGroupCommand::to_string() const {
 
 DynamixelGroupController::DynamixelGroupController(
     const string &device_name,
-    int baud_rate,
-    int loop_sleep_ms_param):
+    int baud_rate):
         device_name(device_name),
         baud_rate(baud_rate),
         port_handler(dynamixel::PortHandler::getPortHandler(device_name.c_str())),
@@ -107,7 +107,10 @@ DynamixelGroupController::DynamixelGroupController(
         IndirectDataForReading(208),
         IndirectAddressForWriting(168 + 14*2),
         IndirectDataForWriting(208 + 14),
-        loop_sleep_ms(loop_sleep_ms_param)
+        loop_sleep_ms(0),
+        loop_sleep_override(false),
+        total_sync_read_bytes(0),
+        total_sync_write_bytes(0)
 {
     if (!port_handler->openPort()) {
         throw DynamixelException("DynamixelGroup constructor: invalid device name");
@@ -165,8 +168,6 @@ DynamixelGroupController::DynamixelGroupController(
     set_sync_read(read_control_map);
     set_sync_write(write_control_map);
     enable_torque(dxl_ids);
-
-    std::cout << "TORQUE ENABLED" << std::endl;
 }
 
 /**
@@ -424,11 +425,10 @@ vector<uint8_t> DynamixelGroupController::ping() {
 
 void DynamixelGroupController::set_sync_read(const DXLIdsToControlTableEntries &dxl_ids_to_values) 
 {
-    std::cout << "set_sync_read " << dxl_ids_to_values << std::endl;
-
     delete sync_reader;
 
     sync_read_settings = dxl_ids_to_values;
+    total_sync_read_bytes = compute_total_data_bytes(sync_read_settings);
 
     int max_size = get_highest_total_size(dxl_ids_to_values);
     sync_reader = new dynamixel::GroupSyncRead(
@@ -460,15 +460,16 @@ void DynamixelGroupController::set_sync_read(const DXLIdsToControlTableEntries &
             throw DynamixelException(e);
         }
     }
+
+    recompute_loop_sleep();
 }
 
 void DynamixelGroupController::set_sync_write(const DXLIdsToControlTableEntries &dxl_ids_to_values) 
 {
-    std::cout << "set_sync_write " << dxl_ids_to_values << std::endl;
-
     delete sync_writer;
 
     sync_write_settings = dxl_ids_to_values;
+    total_sync_write_bytes = compute_total_data_bytes(sync_write_settings);
 
     int max_size = get_highest_total_size(dxl_ids_to_values);
     sync_writer = new dynamixel::GroupSyncWrite(
@@ -493,6 +494,8 @@ void DynamixelGroupController::set_sync_write(const DXLIdsToControlTableEntries 
             }
         }
     }
+
+    recompute_loop_sleep();
 }
 
 DynamixelGroupState DynamixelGroupController::read() 
@@ -627,14 +630,41 @@ void DynamixelGroupController::run_readwrite_loop(ReadWriteLoopFunction f)
 {
     bool should_continue = true;
     DynamixelGroupCommand command;
+    auto maybe_sleep = [this]() {
+        if (loop_sleep_ms > 0) {
+            core::sleep_ms(loop_sleep_ms);
+        }
+    };
     while (should_continue) {
         auto state = this->read();
+        maybe_sleep();
         should_continue = f(state, command);
         if (should_continue && command.should_write) {
             this->write(command);
         }
-        core::sleep_ms(2);
+        maybe_sleep();
     }
+}
+
+void DynamixelGroupController::set_loop_sleep_ms(int ms)
+{
+    if (ms < 0) {
+        loop_sleep_override = false;
+        recompute_loop_sleep();
+    } else {
+        loop_sleep_override = true;
+        loop_sleep_ms = ms;
+    }
+}
+
+void DynamixelGroupController::set_servo_processing_margin_ms(double ms)
+{
+    if (ms < 0.0) {
+        servo_processing_margin_ms = 0.0;
+    } else {
+        servo_processing_margin_ms = ms;
+    }
+    recompute_loop_sleep();
 }
 
 void DynamixelGroupController::freeze()
@@ -650,6 +680,39 @@ void DynamixelGroupController::freeze()
     }
 
     write(cmd);
+}
+
+int DynamixelGroupController::compute_total_data_bytes(const DXLIdsToControlTableEntries& map) const
+{
+    int total = 0;
+    for (const auto& [dxl_id, entries]: map) {
+        (void)dxl_id;
+        total += sum_size_control_table_entries(entries);
+    }
+    return total;
+}
+
+void DynamixelGroupController::recompute_loop_sleep()
+{
+    if (loop_sleep_override) {
+        return;
+    }
+    if (baud_rate <= 0) {
+        loop_sleep_ms = 0;
+        return;
+    }
+
+    int data_bytes = total_sync_read_bytes + total_sync_write_bytes;
+    if (data_bytes <= 0) {
+        loop_sleep_ms = 0;
+        return;
+    }
+
+    constexpr double framing_bits_per_byte = 10.0; // start + data + stop bits
+    double bits = static_cast<double>(data_bytes) * framing_bits_per_byte;
+    double transmission_ms = (bits / static_cast<double>(baud_rate)) * 1000.0;
+    loop_sleep_ms = std::max(1, static_cast<int>(std::ceil(transmission_ms + servo_processing_margin_ms)));
+    std::cout << "loop_sleep_ms:" << loop_sleep_ms << std::endl;
 }
 
 } // namespace dynamixelgroup

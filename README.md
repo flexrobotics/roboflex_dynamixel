@@ -20,6 +20,8 @@ Each dynamixel can have its own independent operation mode (current, position, v
 
 Unless using the PositionController or VelocityController methods to instantiate a controller, the client must decide which control table entries to read and which to write. In general, you can write to the control table entries that are named DXLControlTable::Goal*, and read everything else. Refer to Robotis documentation for details.
 
+The controller automatically paces its read/write loop based on the configured baud rate and the amount of data requested per cycle. If you need to tune this, call `set_loop_sleep_ms()` (to force a specific delay per cycle) or `set_servo_processing_margin_ms()` (to tweak the margin the controller adds after each write). Both getters are exposed so you can inspect the calculated values at runtime.
+
 
 ## Roboflex additions (see [dynamixel.h](dynamixel.h))
 
