@@ -358,6 +358,24 @@ typedef int DXLId;
 typedef map<DXLId, vector<DXLControlTable>> DXLIdsToControlTableEntries;
 
 /**
+ * Human-readable stream operator.
+ */
+inline std::ostream& operator << (std::ostream& os, const DXLIdsToControlTableEntries& entries)
+{
+    os << "{";
+    for (const auto& entry: entries) {
+        os << entry.first << ": [";
+        for (const auto& entry_value: entry.second) {
+            os << (int)entry_value << ", ";
+        }
+        os << "], ";
+    }
+    os << "}";
+    return os;
+}
+
+
+/**
  * A dynamixel motor in the group is configured to
  * read and write values for a subset of the control table. 
  * When we read we get an instance of this for each dynamixel.
@@ -486,7 +504,8 @@ public:
 
     DynamixelGroupController(
         const string& device_name,
-        int baud_rate);
+        int baud_rate,
+        int loop_sleep_ms = 2);
 
     DynamixelGroupController(
         const string& device_name,
@@ -578,6 +597,8 @@ public:
     // and writing calls to the device. It will do this over and
     // over in a loop, until the given function returns false.
     void run_readwrite_loop(ReadWriteLoopFunction f);
+    void set_loop_sleep_ms(int ms);
+    int get_loop_sleep_ms() const { return loop_sleep_ms; }
 
 
     // Enable and disable torque. Must be done bracketing changes
@@ -643,6 +664,7 @@ protected:
     int IndirectDataForReading;
     int IndirectAddressForWriting;
     int IndirectDataForWriting;
+    int loop_sleep_ms = 2;
 
     dynamixel::PortHandler* port_handler;
     dynamixel::PacketHandler* packet_handler;

@@ -95,7 +95,8 @@ string DynamixelGroupCommand::to_string() const {
 
 DynamixelGroupController::DynamixelGroupController(
     const string &device_name,
-    int baud_rate):
+    int baud_rate,
+    int loop_sleep_ms_param):
         device_name(device_name),
         baud_rate(baud_rate),
         port_handler(dynamixel::PortHandler::getPortHandler(device_name.c_str())),
@@ -105,7 +106,8 @@ DynamixelGroupController::DynamixelGroupController(
         IndirectAddressForReading(168),
         IndirectDataForReading(208),
         IndirectAddressForWriting(168 + 14*2),
-        IndirectDataForWriting(208 + 14)
+        IndirectDataForWriting(208 + 14),
+        loop_sleep_ms(loop_sleep_ms_param)
 {
     if (!port_handler->openPort()) {
         throw DynamixelException("DynamixelGroup constructor: invalid device name");
@@ -157,10 +159,14 @@ DynamixelGroupController::DynamixelGroupController(
         throw DynamixelException(es.str());
     }
 
+    std::cout << "DynamixelGroupController found " << model_name << std::endl;
+
     set_operating_modes(dxl_ids, operating_modes);
     set_sync_read(read_control_map);
     set_sync_write(write_control_map);
     enable_torque(dxl_ids);
+
+    std::cout << "TORQUE ENABLED" << std::endl;
 }
 
 /**
@@ -418,6 +424,8 @@ vector<uint8_t> DynamixelGroupController::ping() {
 
 void DynamixelGroupController::set_sync_read(const DXLIdsToControlTableEntries &dxl_ids_to_values) 
 {
+    std::cout << "set_sync_read " << dxl_ids_to_values << std::endl;
+
     delete sync_reader;
 
     sync_read_settings = dxl_ids_to_values;
@@ -456,6 +464,8 @@ void DynamixelGroupController::set_sync_read(const DXLIdsToControlTableEntries &
 
 void DynamixelGroupController::set_sync_write(const DXLIdsToControlTableEntries &dxl_ids_to_values) 
 {
+    std::cout << "set_sync_write " << dxl_ids_to_values << std::endl;
+
     delete sync_writer;
 
     sync_write_settings = dxl_ids_to_values;
@@ -621,8 +631,9 @@ void DynamixelGroupController::run_readwrite_loop(ReadWriteLoopFunction f)
         auto state = this->read();
         should_continue = f(state, command);
         if (should_continue && command.should_write) {
-            write(command);
+            this->write(command);
         }
+        core::sleep_ms(2);
     }
 }
 
