@@ -2,12 +2,13 @@
 #include <cmath>
 #include "roboflex_dynamixel/dynamixel.h"
 #include "roboflex_dynamixel/dynamixel_controller.h"
+#include "roboflex_core/util/utils.h"
 
 using namespace roboflex;
 using namespace roboflex::dynamixelgroup;
 using namespace roboflex::dynamixelnodes;
 
-const int DynamixelID = 10;
+const int DynamixelID = 5;
 
 class MyDynamixelRemoteController: public DynamixelRemoteController {
 public:
@@ -28,8 +29,9 @@ public:
 
         double dt = state.timestamp.t0 - t0;
         int new_pos = int(p0 + 500 * sin(dt));
-        std::cout << "NEW_POS: " << new_pos << std::endl;
-        std::cout << "CUR_POS: " <<  mymotorvalues[DXLControlTable::PresentPosition] << std::endl;
+       
+        //std::cout << "NEW_POS: " << new_pos << std::endl;
+        //std::cout << "CUR_POS: " <<  mymotorvalues[DXLControlTable::PresentPosition] << std::endl;
         return {{DynamixelID, {{DXLControlTable::GoalPosition, new_pos}}}};
     }
 
@@ -44,8 +46,8 @@ int main() {
 
     auto dynamixel_node = DynamixelGroupNode(
         DynamixelGroupController::PositionController(
-            "/dev/ttyUSB0",
-            4000000,
+            "/dev/tty.usbserial-FT2KQC4K",
+            115200,
             {DynamixelID}
         )
     );

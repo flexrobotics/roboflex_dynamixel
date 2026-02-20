@@ -630,17 +630,31 @@ void DynamixelGroupController::run_readwrite_loop(ReadWriteLoopFunction f)
 {
     bool should_continue = true;
     DynamixelGroupCommand command;
+    int consecutive_read_failures = 0;
+    const int max_consecutive_read_failures = 5;
     auto maybe_sleep = [this]() {
         if (loop_sleep_ms > 0) {
             core::sleep_ms(loop_sleep_ms);
         }
     };
     while (should_continue) {
-        auto state = this->read();
-        maybe_sleep();
-        should_continue = f(state, command);
-        if (should_continue && command.should_write) {
-            this->write(command);
+        try {
+            auto state = this->read();
+            consecutive_read_failures = 0;
+            maybe_sleep();
+            should_continue = f(state, command);
+            if (should_continue && command.should_write) {
+                this->write(command);
+            }
+        } catch (const DynamixelException& e) {
+            consecutive_read_failures++;
+            std::cerr << "DynamixelGroupController: read failed ("
+                      << consecutive_read_failures << "/"
+                      << max_consecutive_read_failures << "): "
+                      << e.what() << std::endl;
+            if (consecutive_read_failures >= max_consecutive_read_failures) {
+                throw;
+            }
         }
         maybe_sleep();
     }
@@ -679,7 +693,12 @@ void DynamixelGroupController::freeze()
         }
     }
 
-    write(cmd);
+    // Only write if we found current/velocity entries to zero out.
+    // Position-only controllers have nothing to freeze — writing an
+    // empty or position-only command causes a protocol error on exit.
+    if (!cmd.values.empty()) {
+        write(cmd);
+    }
 }
 
 int DynamixelGroupController::compute_total_data_bytes(const DXLIdsToControlTableEntries& map) const

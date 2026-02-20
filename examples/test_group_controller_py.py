@@ -33,8 +33,8 @@ class MyDynamixelRobot:
 
         # CONSTRUCTOR 3: position control only, with default control table entries
         self.dynamixel = srd.DynamixelGroupController.PositionController(
-            device_name='/dev/ttyUSB0',
-            baud_rate=3_000_000,
+            device_name='/dev/cu.usbserial-FT2KQC4K',
+            baud_rate=115_200,
             dxl_ids=[DynamixelID],
         )
         print("READ SETTINGS: ", self.dynamixel.read_control_map)
